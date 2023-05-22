@@ -19,4 +19,5 @@ public class User {
     private String realName;
     private String phone;
     private String address;
+    private String role;
 }

@@ -21,22 +21,23 @@ public class CustomerFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpSession session = request.getSession();
-        currentUser = (User) session.getAttribute(Constant.TICKET_SYSTEM_USER);
-        // 判断是否登陆
-        if (currentUser == null){
-            PrintWriter out = new HttpServletResponseWrapper((HttpServletResponse) servletResponse).getWriter();
-            out.write("{\n" +
-                    "    \"status\": "+ TicketSystemExceptionEnum.NEED_LOGIN.getCode() +",\n" +
-                    "    \"msg\": \"NEED LOGIN\",\n" +
-                    "    \"data\": null\n" +
-                    "}");
-            out.flush();
-            out.close();
-        }else{
-            filterChain.doFilter(servletRequest, servletResponse);
-        }
+//        HttpServletRequest request = (HttpServletRequest) servletRequest;
+//        HttpSession session = request.getSession();
+//        currentUser = (User) session.getAttribute(Constant.TICKET_SYSTEM_USER);
+//        // 判断是否登陆
+//        if (currentUser == null){
+//            PrintWriter out = new HttpServletResponseWrapper((HttpServletResponse) servletResponse).getWriter();
+//            out.write("{\n" +
+//                    "    \"status\": "+ TicketSystemExceptionEnum.NEED_LOGIN.getCode() +",\n" +
+//                    "    \"msg\": \"NEED LOGIN\",\n" +
+//                    "    \"data\": null\n" +
+//                    "}");
+//            out.flush();
+//            out.close();
+//        }else{
+//        }
+        filterChain.doFilter(servletRequest, servletResponse);
+
     }
 
     @Override

@@ -14,7 +14,11 @@ public enum TicketSystemExceptionEnum {
     UPDATE_FAILED(10008, "更新失败"),
     ORDER_EXITS(10009, "已经存在相同订单"),
     REQUEST_PARAM_ERROR(10012, "参数异常"),
-    ORDER_STATUS_NOT_FOUND(10020, "订单状态未找到");
+    ORDER_STATUS_NOT_FOUND(10020, "订单状态未找到"),
+    NOT_AUTHORITY(10021, "没有权限"),
+    LOGIN_ERROR_PLACE(10022, "异地登陆"),
+    USER_NOT_FOUND(10023, "没有该用户")
+    ;
 
     Integer code;
     String msg;

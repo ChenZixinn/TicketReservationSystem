@@ -9,6 +9,7 @@ import com.ticket.reservation.model.request.AddUserReq;
 import com.ticket.reservation.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.ticket.reservation.model.entity.User;
 
@@ -29,12 +30,16 @@ public class UserServiceImpl implements UserService {
         // 创建用户
         User user = new User();
         BeanUtils.copyProperties(addUserReq, user);
+
         if (user.getUsername().length() < 1){
             throw new TicketSystemException(TicketSystemExceptionEnum.NEED_USER_NAME);
         }
         if (user.getPassword().length() < 1){
-            throw new TicketSystemException(TicketSystemExceptionEnum.NEED_USER_NAME);
+            throw new TicketSystemException(TicketSystemExceptionEnum.NEED_PASSWORD);
         }
+        String password = new BCryptPasswordEncoder().encode(user.getPassword());
+        user.setPassword(password);
+        System.out.println("password:" + password);
         userMapper.insert(user);
     }
 
@@ -54,6 +59,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void update(User user) {
+
+        String passwd = new BCryptPasswordEncoder().encode(user.getPassword());
+        user.setPassword(passwd);
         int i = userMapper.updateById(user);
         if (i == 0){
             throw new TicketSystemException(TicketSystemExceptionEnum.UPDATE_FAILED);

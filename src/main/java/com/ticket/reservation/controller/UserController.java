@@ -43,17 +43,17 @@ public class UserController {
         return ApiRestResponse.success();
     }
 
-    @ApiOperation("登陆接口")
-    @PostMapping("/api/login")
-    public ApiRestResponse login(@Valid @RequestBody LoginUser loginUser, @ApiIgnore HttpSession session){
-        System.out.println(loginUser);
-        User user = userService.login(loginUser.getUsername(), loginUser.getPassword());
-        // 保存到session
-        session.setAttribute(Constant.TICKET_SYSTEM_USER, user);
-//        CustomerFilter.currentUser = user;
-        user.setPassword(null);
-        return ApiRestResponse.success(user);
-    }
+//    @ApiOperation("登陆接口")
+////    @PostMapping("/api/login")
+////    public ApiRestResponse login(@Valid @RequestBody LoginUser loginUser, @ApiIgnore HttpSession session){
+////        System.out.println(loginUser);
+////        User user = userService.login(loginUser.getUsername(), loginUser.getPassword());
+////        // 保存到session
+////        session.setAttribute(Constant.TICKET_SYSTEM_USER, user);
+//////        CustomerFilter.currentUser = user;
+////        user.setPassword(null);
+////        return ApiRestResponse.success(user);
+////    }
 
     @ApiOperation("获取状态")
     @GetMapping("/api/user/userinfo")
@@ -62,13 +62,13 @@ public class UserController {
     }
 
 
-    @ApiOperation("退出登陆")
-    @GetMapping("/api/user/logout")
-    public ApiRestResponse logout(@ApiIgnore HttpSession session){
-        // 退出登陆
-        session.removeAttribute(Constant.TICKET_SYSTEM_USER);
-        return ApiRestResponse.success();
-    }
+//    @ApiOperation("退出登陆")
+//    @GetMapping("/api/user/logout")
+//    public ApiRestResponse logout(@ApiIgnore HttpSession session){
+//        // 退出登陆
+//        session.removeAttribute(Constant.TICKET_SYSTEM_USER);
+//        return ApiRestResponse.success();
+//    }
 
     @ApiOperation("更新用户信息")
     @PostMapping("/api/user/update_user")
