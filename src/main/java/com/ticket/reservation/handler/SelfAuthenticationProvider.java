@@ -1,6 +1,7 @@
 package com.ticket.reservation.handler;
 
 import com.ticket.reservation.filter.CustomerFilter;
+import com.ticket.reservation.model.entity.SecurityUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
@@ -15,19 +16,18 @@ public class SelfAuthenticationProvider implements AuthenticationProvider{
     @Autowired
     UserDetailsService userDetailService;
 
-
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         String account= authentication.getName();     //获取用户名
         String password= (String) authentication.getCredentials();  //获取密码
-        UserDetails userDetails= userDetailService.loadUserByUsername(account);
-        boolean checkPassword= bCryptPasswordEncoder.matches(password,userDetails.getPassword());
+        SecurityUser userDetails= (SecurityUser)userDetailService.loadUserByUsername(account);
+        boolean checkPassword= bCryptPasswordEncoder.matches(password,userDetails.getCurrentUserInfo().getPassword());
         if(!checkPassword){
             throw new BadCredentialsException("密码不正确，请重新登录!");
         }
-        //
-        return new UsernamePasswordAuthenticationToken(account,password,userDetails.getAuthorities());
+
+        return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
     }
 
     @Override

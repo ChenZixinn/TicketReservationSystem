@@ -1,6 +1,7 @@
 package com.ticket.reservation.config;
 
 import com.ticket.reservation.handler.*;
+import com.ticket.reservation.service.impl.MyUserDetailServiceImpl;
 import com.ticket.reservation.service.impl.UserServiceImpl;
 import org.apache.coyote.http11.HttpOutputBuffer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +15,15 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
+import javax.sql.DataSource;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true) //开启权限注解,默认是关闭的
-//@Configuration
+@Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
     @Autowired
     AuthenticationEnryPoint authenticationEnryPoint;    //未登录
     @Autowired
@@ -33,6 +38,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     SessionInformationExpiredStrategy sessionInformationExpiredStrategy;    //检测异地登录
     @Autowired
     SelfAuthenticationProvider selfAuthenticationProvider;      //自定义认证逻辑处理
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return new MyUserDetailServiceImpl();
+    }
 
     //加密方式
     @Bean
@@ -54,9 +64,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         //     /index需要权限为ROLE_USER才能访问   /hello需要权限为ROLE_ADMIN才能访问
         http.authorizeRequests()
-                .antMatchers("/api/ticket/list").permitAll()
-                .antMatchers("/api/order/list").permitAll()
-//                .antMatchers("/swagger-ui.html").hasRole("ADMIN")
+                .antMatchers("/swagger-ui.html").permitAll()
+                .antMatchers("/webjars/**").permitAll()
+                .antMatchers("/swagger-resources/**").permitAll()
+                .antMatchers("/v2/*").permitAll()
+                .antMatchers("/csrf").permitAll()
+                .antMatchers("/").permitAll()
+                .anyRequest().authenticated()
 
                 .and()
                 .formLogin()  //开启登录

@@ -20,6 +20,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -58,6 +59,11 @@ public class UserController {
     @ApiOperation("获取状态")
     @GetMapping("/api/user/userinfo")
     public ApiRestResponse userinfo(){
+        Object principal = SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        System.out.println(principal);
+        System.out.println(SecurityContextHolder.getContext()
+                .getAuthentication().getName());
         return ApiRestResponse.success(CustomerFilter.currentUser);
     }
 
