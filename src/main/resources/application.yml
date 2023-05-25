@@ -8,7 +8,8 @@ spring:
       max-lifetime: 1800000
   redis:
     database: 0
-    host: 
+    host: 47.113.185.181
+    password: Cat010320__
     port: 6379
 
 
