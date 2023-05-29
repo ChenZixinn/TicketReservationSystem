@@ -9,7 +9,6 @@ spring:
   redis:
     database: 0
     host: 47.113.185.181
-    password: Cat010320__
     port: 6379
 
 
