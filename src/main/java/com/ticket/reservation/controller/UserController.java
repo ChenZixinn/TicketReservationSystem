@@ -38,43 +38,20 @@ public class UserController {
     @ApiOperation("注册接口")
     @PostMapping("/api/register")
     public ApiRestResponse register(@Valid @RequestBody AddUserReq addUserReq){
-        System.out.println(addUserReq);
+        // 调用service层接口
         userService.register(addUserReq);
         return ApiRestResponse.success();
     }
 
-//    @ApiOperation("登陆接口")
-////    @PostMapping("/api/login")
-////    public ApiRestResponse login(@Valid @RequestBody LoginUser loginUser, @ApiIgnore HttpSession session){
-////        System.out.println(loginUser);
-////        User user = userService.login(loginUser.getUsername(), loginUser.getPassword());
-////        // 保存到session
-////        session.setAttribute(Constant.TICKET_SYSTEM_USER, user);
-//////        CustomerFilter.currentUser = user;
-////        user.setPassword(null);
-////        return ApiRestResponse.success(user);
-////    }
-
     @ApiOperation("获取状态")
     @GetMapping("/api/user/userinfo")
     public ApiRestResponse userinfo(){
-
         return ApiRestResponse.success(userService.getUserInfo());
     }
-
-
-//    @ApiOperation("退出登陆")
-//    @GetMapping("/api/user/logout")
-//    public ApiRestResponse logout(@ApiIgnore HttpSession session){
-//        // 退出登陆
-//        session.removeAttribute(Constant.TICKET_SYSTEM_USER);
-//        return ApiRestResponse.success();
-//    }
 
     @ApiOperation("更新用户信息")
     @PostMapping("/api/user/update_user")
     public ApiRestResponse update_user(@RequestBody @Valid UpdateUserReq updateUserReq){
-
         userService.update(updateUserReq);
         return ApiRestResponse.success();
     }

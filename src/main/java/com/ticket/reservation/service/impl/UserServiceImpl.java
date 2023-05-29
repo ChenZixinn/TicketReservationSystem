@@ -29,9 +29,15 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserServiceImpl implements UserService {
+    /**
+     * redis工具类
+     */
     @Autowired
     RedisUtils redisUtils;
 
+    /**
+     * user的mapper，数据库操作
+     */
     @Autowired
     private UserMapper userMapper;
 
@@ -84,6 +90,7 @@ public class UserServiceImpl implements UserService {
 
         // 从redis里取
         user = redisUtils.get(Constant.USER_INFO_KEY + id, User.class);
+        // 不返回密码
         user.setPassword("");
         if (user != null) {
             return user;
@@ -91,30 +98,18 @@ public class UserServiceImpl implements UserService {
 
         // 如果redis查不到，到mySQL里查
         QueryWrapper<User> query = new QueryWrapper<>();
+        // 根据id查
         query.eq("id", id);
         user = userMapper.selectOne(query);
+        // 去掉密码
         user.setPassword("");
 
-        // 查到之后存到redis
+        // 查到之后存到redis，key="user_info_key:" + id
         redisUtils.set(Constant.USER_INFO_KEY + user.getId(), JSON.toJSONString(user), 12, TimeUnit.HOURS);
 
         // 返回user
         return user;
     }
-
-//    @Override
-//    public User login(String username, String password) {
-//        // 判断用户名是否存在
-//        QueryWrapper<User> query = new QueryWrapper<>();
-//        query.eq("username", username);
-//        query.eq("password", password);
-//        User user = userMapper.selectOne(query);
-//        if (user == null){
-//            throw new TicketSystemException(TicketSystemExceptionEnum.LOGIN_ERROR);
-//        }
-////        user.setPassword(null);
-//        return user;
-//    }
 
     /**
      * 更新用户信息
@@ -122,12 +117,13 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void update(UpdateUserReq updateUserReq) {
-        // 从Spring Security里拿到用户信息
         User user = null;
 
+        // 从Spring Security里拿到用户信息
         SecurityUser secUser = (SecurityUser)SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         user = secUser.getCurrentUserInfo();
+        // 拿到id
         int id = user.getId();
         // redis查user
         user = redisUtils.get(Constant.USER_INFO_KEY + id, User.class);
@@ -143,7 +139,7 @@ public class UserServiceImpl implements UserService {
         }
         // 复制要更新的属性到原User对象上
         BeanUtils.copyProperties(updateUserReq, user, getNullPropertyNames(updateUserReq));
-        // 更新信息
+        // 在数据库里更新信息
         String passwd = new BCryptPasswordEncoder().encode(user.getPassword());
         user.setPassword(passwd);
         int i = userMapper.updateById(user);
@@ -156,6 +152,11 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    /**
+     * 获取不为空的参数
+     * @param source 参数
+     * @return 字符串列表
+     */
     private static String[] getNullPropertyNames(Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);
         return Arrays.stream(src.getPropertyDescriptors())
