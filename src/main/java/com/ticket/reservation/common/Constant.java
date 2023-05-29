@@ -19,6 +19,7 @@ public class Constant {
     public static final Integer CACHING_SECONDS = 300;
     public static final String TICKET_CACHE_KEY = "ticket_cache_key:";
     public static final String ORDER_CACHE_KEY = "order_cache_key:";
+    public static final String USER_INFO_KEY = "user_info_key:";
 
 
     public interface ProductListOrderBy{

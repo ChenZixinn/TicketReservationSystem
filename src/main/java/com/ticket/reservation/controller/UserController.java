@@ -1,6 +1,5 @@
 package com.ticket.reservation.controller;
 
-
 import com.ticket.reservation.common.ApiRestResponse;
 import com.ticket.reservation.common.Constant;
 import com.ticket.reservation.exception.TicketSystemException;
@@ -59,12 +58,8 @@ public class UserController {
     @ApiOperation("获取状态")
     @GetMapping("/api/user/userinfo")
     public ApiRestResponse userinfo(){
-        Object principal = SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-        System.out.println(principal);
-        System.out.println(SecurityContextHolder.getContext()
-                .getAuthentication().getName());
-        return ApiRestResponse.success(CustomerFilter.currentUser);
+
+        return ApiRestResponse.success(userService.getUserInfo());
     }
 
 
@@ -79,17 +74,10 @@ public class UserController {
     @ApiOperation("更新用户信息")
     @PostMapping("/api/user/update_user")
     public ApiRestResponse update_user(@RequestBody @Valid UpdateUserReq updateUserReq){
-        User user = CustomerFilter.currentUser;
-        BeanUtils.copyProperties(updateUserReq, user, getNullPropertyNames(updateUserReq));
-        userService.update(user);
+
+        userService.update(updateUserReq);
         return ApiRestResponse.success();
     }
 
-    private static String[] getNullPropertyNames(Object source) {
-        final BeanWrapper src = new BeanWrapperImpl(source);
-        return Arrays.stream(src.getPropertyDescriptors())
-                .map(FeatureDescriptor::getName)
-                .filter(name -> src.getPropertyValue(name) == null)
-                .toArray(String[]::new);
-    }
+
 }
