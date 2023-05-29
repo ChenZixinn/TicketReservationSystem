@@ -19,7 +19,9 @@ import org.springframework.stereotype.Service;
 import javax.xml.bind.PrintConversionEvent;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +40,7 @@ public class TicketServiceImpl implements TicketService {
         Page<Ticket> ticketPage = null;
 
         // redis层
-        ticketPage = redisUtils.get(Constant.TICKET_CACHE_KEY + searchTicketReq, Page.class);
+        ticketPage = redisUtils.getPage(Constant.TICKET_CACHE_KEY + searchTicketReq, Ticket.class);
         if (ticketPage!=null){
             System.out.println("redis返回");
             return ticketPage;
@@ -49,8 +51,6 @@ public class TicketServiceImpl implements TicketService {
 
         // 创建查询条件构造器
         QueryWrapper<Ticket> queryWrapper = new QueryWrapper<>();
-        SimpleDateFormat sdfDay = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat sdfMin = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date today = new Date();
 
         // 日期查询

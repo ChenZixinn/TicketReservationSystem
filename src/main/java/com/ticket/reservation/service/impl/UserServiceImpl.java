@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService {
         user = redisUtils.get(Constant.USER_INFO_KEY + id, User.class);
         // 不返回密码
         user.setPassword("");
-        if (user != null) {
+        if (user != null){
             return user;
         }
 

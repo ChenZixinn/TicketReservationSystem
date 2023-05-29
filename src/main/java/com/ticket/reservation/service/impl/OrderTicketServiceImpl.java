@@ -45,7 +45,7 @@ public class OrderTicketServiceImpl implements OrderTicketService {
         }
 
         // redis层
-        orderTicketVOIPage = redisUtils.get(getOrderCacheKey(), Page.class);
+        orderTicketVOIPage = redisUtils.getPage(getOrderCacheKey(), OrderTicketVO.class);
         if (orderTicketVOIPage!=null){
             System.out.println("redis返回");
             return orderTicketVOIPage;
@@ -85,6 +85,7 @@ public class OrderTicketServiceImpl implements OrderTicketService {
         orderTicket.setOrderStatus("已下单");
         Float price = ticketMapper.selectById(addOrderTicketReq.getTicketId()).getPrice();
         orderTicket.setTotalPrice(price);
+        //
         redisUtils.delete(getOrderCacheKey());
         orderMapper.insert(orderTicket);
     }
