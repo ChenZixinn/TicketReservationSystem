@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author tzuxin
  */
-@Component
+
 public class SwaggerAddtion implements ApiListingScannerPlugin {
     /**
      * Implement this method to manually add ApiDescriptions

@@ -42,7 +42,6 @@ public class AuthenticationLogout implements LogoutSuccessHandler{
             redisUtils.delete(username);
         }
 
-        CustomerFilter.currentUser = null;
         //处理编码方式，防止中文乱码的情况
         response.setContentType("text/json;charset=utf-8");
         //返回给前台

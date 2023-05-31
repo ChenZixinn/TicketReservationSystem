@@ -18,7 +18,10 @@ public class Constant {
     public static final String SALT = "e!@$u&)+8,sd?2*1";
     public static final Integer CACHING_SECONDS = 300;
     public static final String TICKET_CACHE_KEY = "ticket_cache_key:";
+    public static final String SINGLE_TICKET_CACHE_KEY = "ticket_cache_key:";
+
     public static final String ORDER_CACHE_KEY = "order_cache_key:";
+    public static final String ORDER_LOCK_KEY = "order_lock_key:";
     public static final String USER_INFO_KEY = "user_info_key:";
 
 

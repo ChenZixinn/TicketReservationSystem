@@ -28,7 +28,6 @@ public class AuthenticationFailure implements AuthenticationFailureHandler{
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException e) throws IOException, ServletException {
 
         ApiRestResponse<Object> msg = ApiRestResponse.error(TicketSystemExceptionEnum.LOGIN_ERROR);
-        CustomerFilter.currentUser = null;
         //处理编码方式，防止中文乱码的情况
         response.setContentType("text/json;charset=utf-8");
         //返回给前台

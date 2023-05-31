@@ -7,6 +7,7 @@ import org.apache.coyote.http11.HttpOutputBuffer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -56,6 +57,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.authenticationProvider(selfAuthenticationProvider);
     }
 
+    @Bean
+    public SelfAuthenticationProvider customAuthenticationProvider() {
+        return new SelfAuthenticationProvider();
+    }
+
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
     //授权
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -71,21 +83,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/csrf").permitAll()
                 .antMatchers("/api/register").permitAll()
                 .antMatchers("/").permitAll()
+                .antMatchers("/api/login").permitAll()
+                .antMatchers("/api/user/logout").permitAll()
                 .anyRequest().authenticated()
 
-                .and()
-                .formLogin()  //开启登录
-                .loginProcessingUrl("/api/login")
-                .permitAll()  //允许所有人访问
-                .successHandler(authenticationSuccess) // 登录成功逻辑处理
-                .failureHandler(authenticationFailure) // 登录失败逻辑处理
 
-                .and()
-                .logout()   //开启注销
-                .logoutUrl("/api/user/logout")
-                .permitAll()    //允许所有人访问
-                .logoutSuccessHandler(authenticationLogout) //注销逻辑处理
-                .deleteCookies("JSESSIONID")    //删除cookie
+//                .and()
+//                .formLogin()  //开启登录
+//                .loginProcessingUrl("/api/login")
+//                .permitAll()  //允许所有人访问
+//                .successHandler(authenticationSuccess) // 登录成功逻辑处理
+//                .failureHandler(authenticationFailure) // 登录失败逻辑处理
+//
+//                .and()
+//                .logout()   //开启注销
+//                .logoutUrl("/api/user/logout")
+//                .permitAll()    //允许所有人访问
+//                .logoutSuccessHandler(authenticationLogout) //注销逻辑处理
+//                .deleteCookies("JSESSIONID")    //删除cookie
 
                 .and().exceptionHandling()
                 .accessDeniedHandler(accessDeny)    //权限不足的时候的逻辑处理

@@ -7,12 +7,19 @@ import com.ticket.reservation.model.entity.Ticket;
 import com.ticket.reservation.model.vo.OrderTicketVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
+import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -57,4 +64,26 @@ public class RedisUtils {
         redisTemplate.delete(key);
     }
 
+    public void deleteKeysWithPrefix(String prefix) {
+        redisTemplate.execute((RedisCallback<Void>) connection -> {
+            ScanOptions scanOptions = ScanOptions.scanOptions().match("*"+prefix + "*").build();
+            Cursor<byte[]> cursor = connection.scan(scanOptions);
+            Set<byte[]> keys = new HashSet<>();
+            while (cursor.hasNext()) {
+                keys.add(cursor.next());
+            }
+            System.out.println("keys:");
+            System.out.println(keys);
+            if (!keys.isEmpty()) {
+                connection.del(keys.toArray(new byte[0][]));
+            }
+            try {
+                cursor.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return null;
+        });
+    }
 }
+

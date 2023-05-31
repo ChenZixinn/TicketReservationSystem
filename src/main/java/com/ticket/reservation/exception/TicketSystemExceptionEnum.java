@@ -17,7 +17,8 @@ public enum TicketSystemExceptionEnum {
     ORDER_STATUS_NOT_FOUND(10020, "订单状态未找到"),
     NOT_AUTHORITY(10021, "没有权限"),
     LOGIN_ERROR_PLACE(10022, "异地登陆"),
-    USER_NOT_FOUND(10023, "没有该用户")
+    USER_NOT_FOUND(10023, "没有该用户"),
+    TICKET_DONE(10024, "余票不足")
     ;
 
     Integer code;

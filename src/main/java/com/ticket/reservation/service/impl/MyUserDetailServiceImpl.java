@@ -44,7 +44,6 @@ public class MyUserDetailServiceImpl implements UserDetailsService {
 //        GrantedAuthority grantedAuthority=new SimpleGrantedAuthority(user.getRole());
         List<String> auths =new ArrayList<>();
         auths.add(user.getRole());
-        CustomerFilter.currentUser = user;
 
         SecurityUser securityUser = new SecurityUser();
         securityUser.setPermissionValueList(auths);

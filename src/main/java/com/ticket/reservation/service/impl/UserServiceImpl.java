@@ -91,8 +91,8 @@ public class UserServiceImpl implements UserService {
         // 从redis里取
         user = redisUtils.get(Constant.USER_INFO_KEY + id, User.class);
         // 不返回密码
-        user.setPassword("");
         if (user != null){
+            user.setPassword("");
             return user;
         }
 
@@ -118,7 +118,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public void update(UpdateUserReq updateUserReq) {
         User user = null;
-
         // 从Spring Security里拿到用户信息
         SecurityUser secUser = (SecurityUser)SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
@@ -147,9 +146,8 @@ public class UserServiceImpl implements UserService {
         if (i == 0) {
             throw new TicketSystemException(TicketSystemExceptionEnum.UPDATE_FAILED);
         }
-        // 删掉redis的数据，保证数据一致
-        redisUtils.delete(Constant.USER_INFO_KEY + user.getId());
-
+        // 更新redis的数据，保证数据一致
+        redisUtils.set(Constant.USER_INFO_KEY + user.getId(), JSON.toJSONString(user));
     }
 
     /**
