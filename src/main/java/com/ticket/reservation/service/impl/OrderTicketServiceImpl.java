@@ -142,7 +142,7 @@ public class OrderTicketServiceImpl implements OrderTicketService {
             throw new TicketSystemException(TicketSystemExceptionEnum.ORDER_STATUS_NOT_FOUND);
         }
         orderTicket.setOrderStatus("已取消");
-        redisUtils.delete(getOrderCacheKey());
+        redisUtils.delete(getOrderCacheKey());  // 清除redis 缓存
         redisUtils.deleteKeysWithPrefix(Constant.TICKET_CACHE_KEY);
         orderMapper.updateById(orderTicket);
     }
