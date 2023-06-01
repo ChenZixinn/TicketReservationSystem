@@ -30,13 +30,11 @@ public class AddTicket {
         @ApiModelProperty(example = "2023-05-10 14:30", value = "出发时间")
         @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
         @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
-        //@JsonFormat(pattern = "yyyy-MM-dd HH:MM", locale = "zh", timezone = "GMT+8")
         private Date departureTime;
 
         @ApiModelProperty(example = "2023-05-10 14:30", value = "到达时间")
         @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
         @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
-        //@JsonFormat(pattern = "yyyy-MM-dd HH:MM", locale = "zh", timezone = "GMT+8")
         private Date arrivalTime;
         private int businessClass;
         private int firstClass;
