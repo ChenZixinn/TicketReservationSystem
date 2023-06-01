@@ -38,15 +38,16 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public IPage<Ticket> listTicket(SearchTicketReq searchTicketReq) {
         Page<Ticket> ticketPage = null;
-
+        long startTime = System.currentTimeMillis();
         // redis层
         ticketPage = redisUtils.getPage(Constant.TICKET_CACHE_KEY + searchTicketReq, Ticket.class);
         if (ticketPage!=null){
-            System.out.println("redis返回");
+            System.out.println("ticket:redis返回, 耗时：" + (System.currentTimeMillis() - startTime) + "ms");
             return ticketPage;
         }
 
         // mysql层
+        // 创建Page对象，泛型是Ticket，传入页数和每页数据量
         Page<Ticket> page = new Page<>(searchTicketReq.getPageNum(), searchTicketReq.getPageSize());
 
         // 创建查询条件构造器
@@ -86,6 +87,8 @@ public class TicketServiceImpl implements TicketService {
 
         // 写入redis
         redisUtils.set(Constant.TICKET_CACHE_KEY + searchTicketReq, JSON.toJSONString(ticketPage), 1, TimeUnit.HOURS);
+        System.out.println("ticket:数据库返回, 耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+
         return ticketPage;
     }
 }

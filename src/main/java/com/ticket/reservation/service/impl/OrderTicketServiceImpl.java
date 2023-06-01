@@ -46,15 +46,18 @@ public class OrderTicketServiceImpl implements OrderTicketService {
 
     @Override
     public Page<OrderTicketVO> listOrderTicket(SearchOrderReq searchOrderReq) {
+        long startTime = System.currentTimeMillis();
         Page<OrderTicketVO> orderTicketVOIPage = null;
 
+        // Spring Security里取出用户id
         SecurityUser secUser = (SecurityUser)SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         User user = secUser.getCurrentUserInfo();
+
         // redis层
-        orderTicketVOIPage = redisUtils.getPage(getOrderCacheKey(), OrderTicketVO.class);
+        orderTicketVOIPage = redisUtils.getPage(getOrderCacheKey(user.getId()), OrderTicketVO.class);
         if (orderTicketVOIPage!=null){
-            System.out.println("redis返回");
+            System.out.println("order:redis返回, 耗时：" + (System.currentTimeMillis() - startTime) + "ms");
             return orderTicketVOIPage;
         }
 
@@ -68,31 +71,10 @@ public class OrderTicketServiceImpl implements OrderTicketService {
         query.eq("order_status", "已下单");
         orderTicketVOIPage = orderMapper.selectOrderWithTicketAndUser(page, user.getId(), query);
         redisUtils.set(getOrderCacheKey(), JSON.toJSONString(orderTicketVOIPage), 1, TimeUnit.HOURS);
+        System.out.println("order:数据库返回, 耗时：" + (System.currentTimeMillis() - startTime) + "ms");
         return orderTicketVOIPage;
     }
 
-    public void searchTicketCount(AddOrderTicketReq addOrderTicketReq){
-        // 尝试从redis里取
-        Ticket ticket = redisUtils.get(SINGLE_TICKET_CACHE_KEY + addOrderTicketReq.getTicketId(), Ticket.class);
-        if (ticket == null){
-            ticket = ticketMapper.selectById(addOrderTicketReq.getTicketId());
-            redisUtils.set(SINGLE_TICKET_CACHE_KEY + addOrderTicketReq.getTicketId(), JSON.toJSONString(ticket));
-        }
-        // 查询是否有余票
-        if (Objects.equals(addOrderTicketReq.getType(), "商务座")){
-            if (ticket.getBusinessClass() < 1){
-                throw new TicketSystemException(TicketSystemExceptionEnum.TICKET_DONE);
-            }
-        } else if (Objects.equals(addOrderTicketReq.getType(), "一等座")) {
-            if (ticket.getFirstClass() < 1){
-                throw new TicketSystemException(TicketSystemExceptionEnum.TICKET_DONE);
-            }
-        }else{
-            if (ticket.getSecondClass() < 1){
-                throw new TicketSystemException(TicketSystemExceptionEnum.TICKET_DONE);
-            }
-        }
-    }
 
     /**
      * 创建订单
@@ -119,16 +101,16 @@ public class OrderTicketServiceImpl implements OrderTicketService {
             throw new TicketSystemException(TicketSystemExceptionEnum.ORDER_EXITS);
         }
         // 判断是否有余票，没余票抛出错误
-        searchTicketCount(addOrderTicketReq);
+//        searchTicketCount(addOrderTicketReq);
         RLock lock = redissonClient.getLock(Constant.ORDER_LOCK_KEY + ticket.getId());
         try {
             lock.lock();
-            searchTicketCount(addOrderTicketReq);
+            String type = searchTicketCount(addOrderTicketReq);
 
             OrderTicket orderTicket = new OrderTicket();
             orderTicket.setUserId(user.getId());
             orderTicket.setTicketId(addOrderTicketReq.getTicketId());
-            orderTicket.setType(addOrderTicketReq.getType());
+            orderTicket.setType(type);
             orderTicket.setOrderStatus("已下单");
             Float price = ticket.getPrice();
             orderTicket.setTotalPrice(price);
@@ -137,9 +119,9 @@ public class OrderTicketServiceImpl implements OrderTicketService {
             redisUtils.delete(SINGLE_TICKET_CACHE_KEY + ticket.getId());
             redisUtils.deleteKeysWithPrefix(Constant.TICKET_CACHE_KEY);
             // 更新ticket
-            if (Objects.equals(addOrderTicketReq.getType(), "商务座")){
+            if (addOrderTicketReq.getType().contains("商务座")){
                 ticket.setBusinessClass(ticket.getBusinessClass() - 1);
-            } else if (Objects.equals(addOrderTicketReq.getType(), "一等座")) {
+            } else if (addOrderTicketReq.getType().contains( "一等座")) {
                 ticket.setFirstClass(ticket.getFirstClass() - 1);
             }else{
                 ticket.setSecondClass(ticket.getSecondClass() - 1);
@@ -164,9 +146,46 @@ public class OrderTicketServiceImpl implements OrderTicketService {
         redisUtils.deleteKeysWithPrefix(Constant.TICKET_CACHE_KEY);
         orderMapper.updateById(orderTicket);
     }
-
     public String getOrderCacheKey(){
         User user = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getCurrentUserInfo();
         return Constant.ORDER_CACHE_KEY + user.getId();
     }
+    public String getOrderCacheKey(int id){
+        return Constant.ORDER_CACHE_KEY + id;
+    }
+
+    /**
+     * 查询是否有余票
+     * @param addOrderTicketReq 增加的订单信息
+     * @return
+     */
+    public String searchTicketCount(AddOrderTicketReq addOrderTicketReq){
+        String type;
+
+        // 尝试从redis里取
+        Ticket ticket = redisUtils.get(SINGLE_TICKET_CACHE_KEY + addOrderTicketReq.getTicketId(), Ticket.class);
+        if (ticket == null){
+            ticket = ticketMapper.selectById(addOrderTicketReq.getTicketId());
+            redisUtils.set(SINGLE_TICKET_CACHE_KEY + addOrderTicketReq.getTicketId(), JSON.toJSONString(ticket));
+        }
+        // 查询是否有余票
+        if (addOrderTicketReq.getType().contains("商务座")){
+            type = "商务座";
+            if (ticket.getBusinessClass() < 1){
+                throw new TicketSystemException(TicketSystemExceptionEnum.TICKET_DONE);
+            }
+        } else if (addOrderTicketReq.getType().contains("一等座")) {
+            type = "一等座";
+            if (ticket.getFirstClass() < 1){
+                throw new TicketSystemException(TicketSystemExceptionEnum.TICKET_DONE);
+            }
+        }else{
+            type = "二等座";
+            if (ticket.getSecondClass() < 1){
+                throw new TicketSystemException(TicketSystemExceptionEnum.TICKET_DONE);
+            }
+        }
+        return type;
+    }
+
 }

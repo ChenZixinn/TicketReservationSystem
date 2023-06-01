@@ -23,7 +23,7 @@ public class AccessDeny implements AccessDeniedHandler{
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e) throws IOException, ServletException {
         System.out.println("access");
-        ApiRestResponse<Object> msg = ApiRestResponse.error(TicketSystemExceptionEnum.NEED_LOGIN);
+        ApiRestResponse<Object> msg = ApiRestResponse.error(TicketSystemExceptionEnum.NOT_AUTHORITY);
         //处理编码方式，防止中文乱码的情况
         response.setContentType("text/json;charset=utf-8");
         //返回给前台

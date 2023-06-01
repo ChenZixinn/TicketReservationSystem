@@ -53,9 +53,12 @@ public class UserServiceImpl implements UserService {
         if (userMapper.selectOne(query) != null) {
             throw new TicketSystemException(TicketSystemExceptionEnum.USERNAME_EXIST);
         }
+
         // 创建用户
         User user = new User();
+        // 复制
         BeanUtils.copyProperties(addUserReq, user);
+
         // 名称长度小于1返回错误
         if (user.getUsername().length() < 1) {
             throw new TicketSystemException(TicketSystemExceptionEnum.NEED_USER_NAME);
@@ -64,15 +67,18 @@ public class UserServiceImpl implements UserService {
         if (user.getPassword().length() < 1) {
             throw new TicketSystemException(TicketSystemExceptionEnum.NEED_PASSWORD);
         }
+
         // 密码编码
         String password = new BCryptPasswordEncoder().encode(user.getPassword());
         // 编码后重新设置密码
         user.setPassword(password);
+
         // 插入到数据库
         int id = userMapper.insert(user);
         // 存入redis，过期时间10小时
-        redisUtils.set(Constant.USER_INFO_KEY + id, JSON.toJSONString(user), 10, TimeUnit.HOURS);
+        redisUtils.set(Constant.USER_INFO_KEY + id, JSON.toJSONString(user), 12, TimeUnit.HOURS);
     }
+    // "user_info_key:1" ： value
 
     /**
      * 获取用户信息
@@ -81,6 +87,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserInfo() {
         User user = null;
+        long startTime = System.currentTimeMillis();
 
         // 从Spring Security里取到用户id，到数据库里查
         SecurityUser secUser = (SecurityUser)SecurityContextHolder.getContext()
@@ -90,9 +97,10 @@ public class UserServiceImpl implements UserService {
 
         // 从redis里取
         user = redisUtils.get(Constant.USER_INFO_KEY + id, User.class);
-        // 不返回密码
         if (user != null){
+            // 不返回密码
             user.setPassword("");
+            System.out.println("user:redis返回, 耗时：" + (System.currentTimeMillis() - startTime) + "ms");
             return user;
         }
 
@@ -100,13 +108,15 @@ public class UserServiceImpl implements UserService {
         QueryWrapper<User> query = new QueryWrapper<>();
         // 根据id查
         query.eq("id", id);
+
         user = userMapper.selectOne(query);
         // 去掉密码
         user.setPassword("");
 
         // 查到之后存到redis，key="user_info_key:" + id
+        //
         redisUtils.set(Constant.USER_INFO_KEY + user.getId(), JSON.toJSONString(user), 12, TimeUnit.HOURS);
-
+        System.out.println("user:数据库返回, 耗时：" + (System.currentTimeMillis() - startTime) + "ms");
         // 返回user
         return user;
     }
@@ -118,12 +128,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public void update(UpdateUserReq updateUserReq) {
         User user = null;
+
         // 从Spring Security里拿到用户信息
         SecurityUser secUser = (SecurityUser)SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         user = secUser.getCurrentUserInfo();
         // 拿到id
         int id = user.getId();
+
         // redis查user
         user = redisUtils.get(Constant.USER_INFO_KEY + id, User.class);
         if (user == null){
@@ -136,16 +148,20 @@ public class UserServiceImpl implements UserService {
                 throw new TicketSystemException(TicketSystemExceptionEnum.USER_NOT_FOUND);
             }
         }
+
         // 复制要更新的属性到原User对象上
         BeanUtils.copyProperties(updateUserReq, user, getNullPropertyNames(updateUserReq));
+
         // 在数据库里更新信息
         String passwd = new BCryptPasswordEncoder().encode(user.getPassword());
         user.setPassword(passwd);
+
         int i = userMapper.updateById(user);
         // 没更新成功返回报错信息
         if (i == 0) {
             throw new TicketSystemException(TicketSystemExceptionEnum.UPDATE_FAILED);
         }
+
         // 更新redis的数据，保证数据一致
         redisUtils.set(Constant.USER_INFO_KEY + user.getId(), JSON.toJSONString(user));
     }
