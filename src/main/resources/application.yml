@@ -8,9 +8,9 @@ spring:
       max-lifetime: 1800000
   redis:
     database: 0
-    host: 47.113.185.181
+    host: 127.0.0.1
     port: 6379
-    password: ei0ei0ei0
+    password: 123456
 
 
 
