@@ -32,7 +32,7 @@
 
 ##### 机票预订页
 
-##### ![image-20230613132514532](/Users/chenzixin/Library/Mobile Documents/com~apple~CloudDocs/Documents/Code/java/TicketReservationSystem/README.assets/image-20230613132514532.png)
+![image-20230613132514532](./README.assets/image-20230613132514532.png)
 
 
 
